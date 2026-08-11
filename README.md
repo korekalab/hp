@@ -8,14 +8,14 @@
 | ---------------- | --------------------------------------- |
 | フレームワーク   | [Astro](https://astro.build/)（静的出力）|
 | スタイリング     | Tailwind CSS v4 (`@tailwindcss/vite`)   |
-| ホスティング     | Cloudflare Pages                        |
+| ホスティング     | Cloudflare Workers（Static Assets）      |
 | フォント         | Fontsource（M PLUS Rounded 1c / Noto Sans JP、セルフホスト）|
 | CMS / DB         | なし（コンテンツはリポジトリ内の TypeScript データファイル）|
 
 ### なぜ Astro か
 
 - **1ページのコーポレートLP**という規模に対して、Next.js や Remix のようなフルスタックフレームワークは過剰。Astro はデフォルトでクライアントJSをほぼ出力しない「Islands」構成のため、この規模のサイトで最速の表示速度を実現できる。
-- ビルド成果物が完全な静的HTML/CSS/JSになるため、**Cloudflare Pages に無料枠で安定してデプロイ**できる（サーバーレス関数やDBは一切不要）。
+- ビルド成果物が完全な静的HTML/CSS/JSになるため、**Cloudflare（Workers Static Assets）に無料枠で安定してデプロイ**できる（サーバーレス関数やDBは一切不要）。
 - `sitemap.xml`・OGP・構造化データなど**SEO関連の機能が標準/公式インテグレーションで揃っている**（`@astrojs/sitemap` など）。
 - コンポーネント指向で、`src/data/*.ts` にコンテンツを分離しているため、**非エンジニアでも配列に1項目追加するだけで**プロジェクトや実験を追加できる。
 
@@ -38,7 +38,7 @@ Vite/React SPA や素のHTMLも検討したが、SEO（メタタグ・sitemap・
 │   ├── layouts/Layout.astro  head内のメタタグ・OGP・構造化データ・共通script
 │   ├── pages/index.astro     1ページ分のセクションを並べるだけ
 │   └── styles/global.css     Tailwindテーマ（ブランドカラー・フォント・アニメーション）
-└── wrangler.jsonc           Cloudflare Pages 向け設定
+└── wrangler.jsonc           Cloudflare Workers (Static Assets) 向け設定
 ```
 
 ## コンテンツの追加・編集方法
@@ -61,26 +61,27 @@ npm run build     # ./dist/ に静的ファイルを出力
 npm run preview   # ビルド結果をローカルで確認
 ```
 
-## Cloudflare Pages へのデプロイ
+## Cloudflare へのデプロイ
+
+Cloudflare は Pages と Workers を統合しており、本プロジェクトは **Workers Static Assets**（静的アセットのみのWorker）としてデプロイする構成になっている。`wrangler.jsonc` の `assets.directory` がビルド出力先 `dist` を指しており、サーバーサイドの処理（`main` エントリーポイント）は一切持たない、完全な静的サイトとして配信される。
 
 ### 方法A: Cloudflare ダッシュボードでGitHub連携（推奨）
 
 1. このリポジトリをGitHubにpushする
-2. Cloudflare ダッシュボード → Workers & Pages → Pages → 「Gitに接続」でこのリポジトリを選択
-3. ビルド設定
-   - フレームワークプリセット: `Astro`
+2. Cloudflare ダッシュボード → Workers & Pages → 「Gitに接続」でこのリポジトリを選択
+3. ビルド設定（ダッシュボードが `wrangler.jsonc` を検出して自動入力する）
    - ビルドコマンド: `npm run build`
-   - ビルド出力ディレクトリ: `dist`
-4. カスタムドメイン `korekalab.com` を Pages プロジェクトに追加
+   - デプロイコマンド: `npx wrangler deploy`
+4. デプロイ後、プロジェクトの「カスタムドメイン」設定から `korekalab.com` を追加（ドメインのゾーンが同じCloudflareアカウントに存在している必要がある）
 
 ### 方法B: Wrangler CLI で手動デプロイ
 
 ```sh
 npm run build
-npx wrangler pages deploy dist --project-name korekalab
+npx wrangler deploy
 ```
 
-`wrangler.jsonc` に `pages_build_output_dir` を設定済みのため、`npx wrangler pages deploy` だけでも動作します。
+設定内容は `npx wrangler deploy --dry-run` で事前検証できる。
 
 ## Google Analytics の追加方法
 

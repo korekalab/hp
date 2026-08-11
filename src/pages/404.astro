@@ -1,0 +1,21 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { SITE } from "../data/site";
+---
+
+<Layout title={`ページが見つかりません｜${SITE.name}`} description="お探しのページは見つかりませんでした。">
+  <main class="flex min-h-svh flex-col items-center justify-center px-6 text-center">
+    <img src="/logo-mark.png" width="72" height="72" alt="" class="mb-6 h-16 w-16" />
+    <p class="font-display text-sm font-bold tracking-[0.3em] text-turquoise-deep">404</p>
+    <h1 class="mt-4 font-display text-2xl font-black text-ink sm:text-3xl">
+      これは、まだ「これか！」じゃなかったみたい。
+    </h1>
+    <p class="mt-4 text-ink-soft">お探しのページは見つかりませんでした。</p>
+    <a
+      href="/"
+      class="mt-8 inline-flex items-center gap-2 rounded-full bg-turquoise-deep px-6 py-3 font-display font-bold text-white transition-colors hover:bg-ink"
+    >
+      トップへ戻る
+    </a>
+  </main>
+</Layout>
