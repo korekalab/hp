@@ -1,0 +1,88 @@
+---
+type Card = {
+  word: string;
+  reading: string;
+  keywords: string[];
+  accent: string;
+  bg: string;
+};
+
+const cards: Card[] = [
+  {
+    word: "これか！",
+    reading: "発見の瞬間",
+    keywords: ["直感", "発見", "好奇心"],
+    accent: "text-turquoise-deep",
+    bg: "bg-turquoise/10",
+  },
+  {
+    word: "これから",
+    reading: "未来への意味",
+    keywords: ["未来", "可能性", "始まり"],
+    accent: "text-sunshine-deep",
+    bg: "bg-sunshine/15",
+  },
+  {
+    word: "ラボ",
+    reading: "実験場",
+    keywords: ["実験", "試作", "挑戦"],
+    accent: "text-ink",
+    bg: "bg-ink/5",
+  },
+];
+---
+
+<section id="name" class="relative overflow-hidden bg-turquoise/5 px-6 py-24 sm:py-32">
+  <div class="relative mx-auto max-w-4xl text-center">
+    <p data-reveal class="font-display text-sm font-bold tracking-[0.3em] text-turquoise-deep">
+      NAME / CONCEPT
+    </p>
+    <h2 data-reveal class="mt-4 font-display text-3xl font-black text-balance text-ink sm:text-4xl">
+      「コレカラボ」という名前
+    </h2>
+
+    <div class="mt-14 flex flex-col items-center gap-4 sm:flex-row sm:justify-center sm:gap-3">
+      {
+        cards.map((card, i) => (
+          <>
+            <div
+              data-reveal
+              style={`transition-delay:${i * 120}ms`}
+              class={`w-full max-w-[15rem] rounded-3xl border border-ink/5 ${card.bg} p-6 shadow-sm sm:w-56`}
+            >
+              <p class={`font-display text-2xl font-black ${card.accent}`}>{card.word}</p>
+              <p class="mt-1 text-xs text-ink-soft">{card.reading}</p>
+              <div class="mt-4 flex flex-wrap justify-center gap-1.5">
+                {card.keywords.map((k) => (
+                  <span class="rounded-full bg-white px-2.5 py-1 text-[11px] font-bold text-ink-soft shadow-sm">
+                    {k}
+                  </span>
+                ))}
+              </div>
+            </div>
+            {i < cards.length - 1 && (
+              <span class="font-display text-2xl font-black text-ink/30" aria-hidden="true">
+                ×
+              </span>
+            )}
+          </>
+        ))
+      }
+    </div>
+
+    <div data-reveal class="mt-10 flex justify-center text-turquoise/50" aria-hidden="true">
+      <svg class="h-8 w-8 animate-bounce" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 4v16M6 14l6 6 6-6" />
+      </svg>
+    </div>
+
+    <p data-reveal class="animate-pop font-display text-4xl font-black text-ink sm:text-6xl">
+      コレ<span class="text-turquoise-deep">カラ</span>ボ
+    </p>
+
+    <p data-reveal class="mt-8 text-lg font-bold leading-relaxed text-ink sm:text-xl">
+      「これか！」から、<br class="sm:hidden" />
+      「これから」をつくる。
+    </p>
+  </div>
+</section>

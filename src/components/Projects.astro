@@ -1,0 +1,57 @@
+---
+import { projectCategories } from "../data/projects";
+import IconApp from "./icons/IconApp.astro";
+import IconMedia from "./icons/IconMedia.astro";
+import IconMarketing from "./icons/IconMarketing.astro";
+import IconEvent from "./icons/IconEvent.astro";
+import IconMore from "./icons/IconMore.astro";
+
+const icons = {
+  app: IconApp,
+  media: IconMedia,
+  marketing: IconMarketing,
+  event: IconEvent,
+  more: IconMore,
+} as const;
+---
+
+<section id="projects" class="relative overflow-hidden bg-turquoise/5 px-6 py-24 sm:py-32">
+  <div class="mx-auto max-w-6xl">
+    <div class="text-center">
+      <p data-reveal class="font-display text-sm font-bold tracking-[0.3em] text-turquoise-deep">
+        WHAT WE DO
+      </p>
+      <h2 data-reveal class="mt-4 font-display text-3xl font-black text-balance text-ink sm:text-4xl">
+        今、やっていること
+      </h2>
+      <p data-reveal class="mt-3 text-ink-soft">ジャンルは限定しません。面白ければ、なんでも。</p>
+    </div>
+
+    <div class="mt-14 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        projectCategories.map((project, i) => {
+          const Icon = icons[project.icon];
+          const Tag = project.url ? "a" : "div";
+          return (
+            <Tag
+              href={project.url}
+              data-reveal
+              style={`transition-delay:${(i % 3) * 100}ms`}
+              class="group flex flex-col rounded-3xl border border-ink/5 bg-white p-7 shadow-sm transition-all duration-300 hover:-translate-y-2 hover:shadow-xl"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-turquoise/10 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+                  <Icon class="h-8 w-8" />
+                </div>
+                <span class="font-display text-2xl font-black text-ink/10">{project.number}</span>
+              </div>
+              <p class="mt-5 font-display text-lg font-bold text-ink">{project.label}</p>
+              <p class="mt-1 text-xs font-bold tracking-wider text-turquoise-deep">{project.labelEn}</p>
+              <p class="mt-3 text-sm leading-relaxed text-ink-soft">{project.description}</p>
+            </Tag>
+          );
+        })
+      }
+    </div>
+  </div>
+</section>

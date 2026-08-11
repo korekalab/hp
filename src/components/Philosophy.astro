@@ -1,0 +1,29 @@
+---
+const lines = [
+  { text: "面白いから、やる。", color: "text-turquoise-deep", align: "text-left", rotate: "-rotate-1" },
+  { text: "まず、やってみる。", color: "text-ink", align: "text-right", rotate: "rotate-1" },
+  { text: "ダメなら、次。", color: "text-sunshine-deep", align: "text-left", rotate: "-rotate-1" },
+  { text: "面白かったら、もっとやる。", color: "text-turquoise-deep", align: "text-right", rotate: "rotate-1" },
+];
+---
+
+<section class="relative overflow-hidden px-6 py-28 sm:py-36">
+  <div class="pointer-events-none absolute inset-0 opacity-[0.5]">
+    <div class="absolute left-1/4 top-0 h-96 w-96 rounded-full bg-turquoise/10 blur-3xl"></div>
+    <div class="absolute bottom-0 right-1/4 h-96 w-96 rounded-full bg-sunshine/15 blur-3xl"></div>
+  </div>
+
+  <div class="relative mx-auto flex max-w-4xl flex-col gap-6 sm:gap-4">
+    {
+      lines.map((line, i) => (
+        <p
+          data-reveal
+          style={`transition-delay:${i * 120}ms`}
+          class={`font-display ${line.align} ${line.rotate} text-[2.2rem] font-black leading-[1.2] sm:text-6xl md:text-7xl ${line.color}`}
+        >
+          {line.text}
+        </p>
+      ))
+    }
+  </div>
+</section>

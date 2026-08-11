@@ -1,0 +1,13 @@
+---
+import { SITE } from "../data/site";
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-ink/5 px-6 py-10 text-center">
+  <a href="#hero" class="inline-flex items-center gap-2">
+    <img src="/logo-mark.png" width="28" height="28" alt="" class="rounded-full" />
+    <span class="font-display font-bold text-ink">{SITE.name}</span>
+  </a>
+  <p class="mt-2 text-sm text-ink-soft">{SITE.domain}</p>
+  <p class="mt-4 text-xs text-ink-soft/70">&copy; {year} Korekalab</p>
+</footer>
