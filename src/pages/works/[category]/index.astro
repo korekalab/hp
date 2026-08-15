@@ -1,9 +1,9 @@
 ---
 import { env } from "cloudflare:workers";
-import PageLayout from "../../layouts/PageLayout.astro";
-import ServiceCard from "../../components/works/ServiceCard.astro";
-import { listPublishedServicesByCategory } from "../../lib/db";
-import { isProjectCategoryId, getProjectCategory } from "../../data/projects";
+import PageLayout from "../../../layouts/PageLayout.astro";
+import ServiceCard from "../../../components/works/ServiceCard.astro";
+import { listPublishedServicesByCategory } from "../../../lib/db";
+import { isProjectCategoryId, getProjectCategory } from "../../../data/projects";
 
 const categoryParam = Astro.params.category;
 if (!isProjectCategoryId(categoryParam)) {

@@ -6,22 +6,31 @@ interface Props {
 }
 
 const { service } = Astro.props;
+const detailHref = `/works/${service.category}/${service.id}`;
 ---
 
 <div
   class="group flex flex-col overflow-hidden rounded-3xl border border-ink/5 bg-white shadow-sm transition-shadow hover:shadow-lg"
 >
-  <div class="aspect-video overflow-hidden bg-ink/5">
-    <img
-      src={service.eyecatch_url ?? "/logo-mark.png"}
-      alt=""
-      loading="lazy"
-      class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-    />
-  </div>
+  <a href={detailHref} class="block">
+    <div class="aspect-video overflow-hidden bg-ink/5">
+      <img
+        src={service.eyecatch_url ?? "/logo-mark.png"}
+        alt=""
+        loading="lazy"
+        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+      />
+    </div>
+  </a>
   <div class="flex flex-1 flex-col p-6">
-    <h3 class="font-display text-lg font-bold text-ink">{service.name}</h3>
-    <p class="mt-2 flex-1 whitespace-pre-line text-sm leading-relaxed text-ink-soft">{service.description}</p>
+    <a href={detailHref} class="block">
+      <h3 class="font-display text-lg font-bold text-ink transition-colors group-hover:text-turquoise-deep">
+        {service.name}
+      </h3>
+      <p class="mt-2 line-clamp-3 whitespace-pre-line text-sm leading-relaxed text-ink-soft">
+        {service.description}
+      </p>
+    </a>
     {
       service.url && (
         <a
