@@ -72,6 +72,87 @@ body {
   font-family: var(--font-display);
 }
 
+/* お知らせのアコーディオン(details/summary)からデフォルトの三角マーカーを消す */
+summary::-webkit-details-marker {
+  display: none;
+}
+summary::marker {
+  content: "";
+}
+
+/* TipTapで書かれたブログ本文(content_html)の見た目。ブランドトークンのみ使用 */
+.prose-blog {
+  color: var(--color-ink-soft);
+  line-height: 1.9;
+}
+.prose-blog > * + * {
+  margin-top: 1.25em;
+}
+.prose-blog h1,
+.prose-blog h2,
+.prose-blog h3 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  color: var(--color-ink);
+  line-height: 1.4;
+}
+.prose-blog h1 {
+  font-size: 1.75rem;
+  margin-top: 2em;
+}
+.prose-blog h2 {
+  font-size: 1.5rem;
+  margin-top: 2em;
+}
+.prose-blog h3 {
+  font-size: 1.25rem;
+  margin-top: 1.75em;
+}
+.prose-blog p {
+  margin-top: 1.25em;
+}
+.prose-blog a {
+  color: var(--color-turquoise-deep);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prose-blog strong {
+  color: var(--color-ink);
+  font-weight: 700;
+}
+.prose-blog ul,
+.prose-blog ol {
+  padding-left: 1.5em;
+}
+.prose-blog ul {
+  list-style: disc;
+}
+.prose-blog ol {
+  list-style: decimal;
+}
+.prose-blog li + li {
+  margin-top: 0.5em;
+}
+.prose-blog blockquote {
+  border-left: 4px solid var(--color-turquoise);
+  background: color-mix(in srgb, var(--color-turquoise) 6%, transparent);
+  padding: 1em 1.25em;
+  border-radius: 0 1rem 1rem 0;
+  color: var(--color-ink-soft);
+}
+.prose-blog img {
+  border-radius: 1.5rem;
+  width: 100%;
+  height: auto;
+}
+.prose-blog code {
+  background: color-mix(in srgb, var(--color-ink) 6%, transparent);
+  border-radius: 0.375rem;
+  padding: 0.1em 0.4em;
+  font-size: 0.9em;
+}
+
 /* scroll-reveal: JS toggles [data-visible] on scroll; fallback = always visible */
 [data-reveal] {
   opacity: 0;

@@ -1,0 +1,34 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { listAllPosts, listAllNews } from "../../lib/db";
+
+export const prerender = false;
+
+const posts = await listAllPosts(env.DB);
+const news = await listAllNews(env.DB);
+const publishedPosts = posts.filter((p) => p.published === 1).length;
+const publishedNews = news.filter((n) => n.published === 1).length;
+---
+
+<AdminLayout title="ダッシュボード">
+  <h1 class="font-display text-2xl font-black text-ink">ダッシュボード</h1>
+  <div class="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2">
+    <a
+      href="/admin/posts"
+      class="rounded-3xl border border-ink/5 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+    >
+      <p class="font-display text-sm font-bold text-turquoise-deep">BLOG</p>
+      <p class="mt-2 font-display text-3xl font-black text-ink">{posts.length}件</p>
+      <p class="mt-1 text-sm text-ink-soft">公開中 {publishedPosts}件</p>
+    </a>
+    <a
+      href="/admin/news"
+      class="rounded-3xl border border-ink/5 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+    >
+      <p class="font-display text-sm font-bold text-turquoise-deep">NEWS</p>
+      <p class="mt-2 font-display text-3xl font-black text-ink">{news.length}件</p>
+      <p class="mt-1 text-sm text-ink-soft">公開中 {publishedNews}件</p>
+    </a>
+  </div>
+</AdminLayout>

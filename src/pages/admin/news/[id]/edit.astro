@@ -1,0 +1,106 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../../layouts/AdminLayout.astro";
+import AdminEditorScript from "../../../../components/admin/AdminEditorScript.astro";
+import { getNewsById } from "../../../../lib/db";
+
+export const prerender = false;
+
+const id = Number(Astro.params.id);
+const item = Number.isFinite(id) ? await getNewsById(env.DB, id) : null;
+
+if (!item) {
+  return Astro.redirect("/admin/news");
+}
+---
+
+<AdminLayout title="お知らせを編集">
+  <h1 class="font-display text-2xl font-black text-ink">お知らせを編集</h1>
+
+  <form id="news-form" class="mt-8 space-y-6">
+    <div>
+      <label for="title" class="text-sm font-bold text-ink">タイトル</label>
+      <input
+        type="text"
+        id="title"
+        name="title"
+        required
+        value={item.title}
+        class="mt-1 w-full rounded-xl border border-ink/10 px-4 py-2.5 outline-none focus:border-turquoise-deep"
+      />
+    </div>
+
+    <div>
+      <span class="text-sm font-bold text-ink">本文</span>
+      <div class="mt-2">
+        <AdminEditorScript id="body" initialHtml={item.body_html} />
+      </div>
+    </div>
+
+    <label class="flex items-center gap-2 text-sm font-bold text-ink">
+      <input
+        type="checkbox"
+        id="published"
+        name="published"
+        checked={item.published === 1}
+        class="h-4 w-4 rounded border-ink/20 text-turquoise-deep focus:ring-turquoise-deep"
+      />
+      公開する
+    </label>
+
+    <p id="form-error" class="hidden rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600"></p>
+
+    <div class="flex items-center gap-3">
+      <button
+        type="submit"
+        class="rounded-full bg-turquoise-deep px-6 py-3 font-display font-bold text-white transition-colors hover:bg-ink"
+      >
+        更新する
+      </button>
+      <a
+        href="/admin/news"
+        class="rounded-full bg-ink/5 px-6 py-3 text-sm font-bold text-ink-soft transition-colors hover:bg-ink/10"
+      >
+        キャンセル
+      </a>
+    </div>
+  </form>
+</AdminLayout>
+
+<script is:inline define:vars={{ newsId: item.id }}>
+  window.__NEWS_ID__ = newsId;
+</script>
+<script>
+  const form = document.getElementById("news-form") as HTMLFormElement | null;
+  const errorEl = document.getElementById("form-error");
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorEl?.classList.add("hidden");
+
+    const formData = new FormData(form);
+    const bodyHtml = (window as any).__adminEditors?.body?.getHTML() ?? "";
+
+    const payload = {
+      title: formData.get("title"),
+      body_html: bodyHtml,
+      published: formData.get("published") === "on",
+    };
+
+    const res = await fetch(`/api/admin/news/${(window as any).__NEWS_ID__}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      window.location.href = "/admin/news";
+    } else {
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (errorEl) {
+        errorEl.textContent = data.error || "更新に失敗しました。";
+        errorEl.classList.remove("hidden");
+      }
+    }
+  });
+</script>

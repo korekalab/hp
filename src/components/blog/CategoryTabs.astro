@@ -1,0 +1,30 @@
+---
+import { CATEGORY_TABS, type CategoryId } from "../../lib/categories";
+
+interface Props {
+  active: CategoryId | "all";
+}
+
+const { active } = Astro.props;
+---
+
+<div class="flex flex-wrap justify-center gap-2">
+  {
+    CATEGORY_TABS.map((tab) => {
+      const isActive = tab.id === active;
+      const href = tab.id === "all" ? "/blog" : `/blog?category=${tab.id}`;
+      return (
+        <a
+          href={href}
+          class={
+            isActive
+              ? "rounded-full bg-ink px-4 py-2 text-sm font-bold text-white"
+              : "rounded-full bg-ink/5 px-4 py-2 text-sm font-bold text-ink-soft transition-colors hover:bg-turquoise/10"
+          }
+        >
+          {tab.label}
+        </a>
+      );
+    })
+  }
+</div>

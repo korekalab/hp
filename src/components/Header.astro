@@ -1,24 +1,94 @@
 ---
 import { SITE } from "../data/site";
+
+const { pathname } = Astro.url;
+const isHome = pathname === "/";
+const logoHref = isHome ? "#hero" : "/";
+const contactHref = isHome ? "#contact" : "/#contact";
+
+const navLinks = [
+  { href: "/blog", label: "事例・ノウハウ" },
+  { href: "/news", label: "お知らせ" },
+];
 ---
 
 <header
-  class="fixed top-0 inset-x-0 z-50 flex items-center justify-between px-5 py-3 sm:px-8 sm:py-4 bg-white/75 backdrop-blur-md border-b border-ink/5"
+  class="fixed top-0 inset-x-0 z-50 bg-white/75 backdrop-blur-md border-b border-ink/5"
 >
-  <a href="#hero" class="flex items-center gap-2 group" aria-label={`${SITE.name} トップへ`}>
-    <img
-      src="/logo-mark.png"
-      width="36"
-      height="36"
-      alt=""
-      class="rounded-full transition-transform duration-300 group-hover:rotate-12"
-    />
-    <span class="font-display font-bold text-ink text-lg tracking-wide">{SITE.name}</span>
-  </a>
-  <a
-    href="#contact"
-    class="rounded-full bg-ink text-white text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 transition-colors hover:bg-turquoise-deep"
+  <div class="flex items-center justify-between px-5 py-3 sm:px-8 sm:py-4">
+    <a href={logoHref} class="flex items-center gap-2 group shrink-0" aria-label={`${SITE.name} トップへ`}>
+      <img
+        src="/logo-mark.png"
+        width="36"
+        height="36"
+        alt=""
+        class="rounded-full transition-transform duration-300 group-hover:rotate-12"
+      />
+      <span class="font-display font-bold text-ink text-lg tracking-wide">{SITE.name}</span>
+    </a>
+
+    <nav class="hidden sm:flex items-center gap-6">
+      {
+        navLinks.map((link) => (
+          <a
+            href={link.href}
+            class="text-sm font-bold text-ink-soft transition-colors hover:text-turquoise-deep"
+          >
+            {link.label}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="flex items-center gap-2">
+      <a
+        href={contactHref}
+        class="hidden sm:inline-block rounded-full bg-ink text-white text-sm font-bold px-4 py-2 sm:px-5 sm:py-2.5 transition-colors hover:bg-turquoise-deep"
+      >
+        お問い合わせ
+      </a>
+      <button
+        type="button"
+        id="mobile-nav-toggle"
+        aria-expanded="false"
+        aria-controls="mobile-nav"
+        class="sm:hidden flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-ink/5"
+        aria-label="メニューを開く"
+      >
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="h-6 w-6">
+          <path d="M4 7h16M4 12h16M4 17h16" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div
+    id="mobile-nav"
+    class="hidden sm:hidden border-t border-ink/5 bg-white/95 backdrop-blur-md px-5 py-4"
   >
-    お問い合わせ
-  </a>
+    <div class="flex flex-col gap-3">
+      {
+        navLinks.map((link) => (
+          <a href={link.href} class="text-base font-bold text-ink-soft hover:text-turquoise-deep">
+            {link.label}
+          </a>
+        ))
+      }
+      <a
+        href={contactHref}
+        class="mt-2 inline-block w-fit rounded-full bg-ink text-white text-sm font-bold px-5 py-2.5 hover:bg-turquoise-deep"
+      >
+        お問い合わせ
+      </a>
+    </div>
+  </div>
 </header>
+
+<script>
+  const toggle = document.getElementById("mobile-nav-toggle");
+  const panel = document.getElementById("mobile-nav");
+  toggle?.addEventListener("click", () => {
+    const isOpen = panel?.classList.toggle("hidden") === false;
+    toggle.setAttribute("aria-expanded", String(isOpen));
+  });
+</script>

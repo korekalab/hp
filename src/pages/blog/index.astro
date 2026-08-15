@@ -1,0 +1,54 @@
+---
+import { env } from "cloudflare:workers";
+import PageLayout from "../../layouts/PageLayout.astro";
+import BlogCard from "../../components/blog/BlogCard.astro";
+import CategoryTabs from "../../components/blog/CategoryTabs.astro";
+import PopularSidebar from "../../components/blog/PopularSidebar.astro";
+import { listPublishedPosts, popularPosts } from "../../lib/db";
+import { isCategoryId, type CategoryId } from "../../lib/categories";
+
+const categoryParam = Astro.url.searchParams.get("category") ?? undefined;
+const activeCategory: CategoryId | "all" = isCategoryId(categoryParam) ? categoryParam : "all";
+
+const posts = await listPublishedPosts(env.DB, activeCategory === "all" ? undefined : activeCategory);
+const popular = await popularPosts(env.DB, 3);
+---
+
+<PageLayout
+  title="事例・ノウハウ｜コレカラボ"
+  description="コレカラボが手がけたプロジェクトの事例や、開発・メディア運営で得たノウハウを発信しています。"
+>
+  <section class="px-6 py-16 sm:py-20">
+    <div class="mx-auto max-w-6xl">
+      <div class="text-center">
+        <p class="font-display text-sm font-bold tracking-[0.3em] text-turquoise-deep">BLOG</p>
+        <h1 class="mt-4 font-display text-3xl font-black text-balance text-ink sm:text-4xl">事例・ノウハウ</h1>
+      </div>
+
+      <div class="mt-10">
+        <CategoryTabs active={activeCategory} />
+      </div>
+
+      <div class="mt-12 lg:grid lg:grid-cols-[1fr_320px] lg:gap-12">
+        <div>
+          {
+            posts.length === 0 ? (
+              <p class="rounded-3xl border-2 border-dashed border-turquoise/30 bg-turquoise/5 px-8 py-16 text-center text-ink-soft">
+                まだ記事がありません。お楽しみに。
+              </p>
+            ) : (
+              <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-3">
+                {posts.map((post) => (
+                  <BlogCard post={post} />
+                ))}
+              </div>
+            )
+          }
+        </div>
+        <div class="mt-10 lg:mt-0">
+          <PopularSidebar posts={popular} />
+        </div>
+      </div>
+    </div>
+  </section>
+</PageLayout>

@@ -1,0 +1,49 @@
+---
+import { env } from "cloudflare:workers";
+import PageLayout from "../../layouts/PageLayout.astro";
+import { getPublishedPostBySlug, incrementViewCount } from "../../lib/db";
+import { CATEGORY_LABEL } from "../../lib/categories";
+
+const { slug } = Astro.params;
+const post = slug ? await getPublishedPostBySlug(env.DB, slug) : null;
+
+if (!post) {
+  return Astro.rewrite("/404");
+}
+
+await incrementViewCount(env.DB, post.id);
+---
+
+<PageLayout title={`${post.title}｜コレカラボ`} description={post.excerpt}>
+  <article class="px-6 py-16 sm:py-20">
+    <div class="mx-auto max-w-3xl">
+      <p class="text-center">
+        <span class="inline-block rounded-full bg-turquoise/10 px-3 py-1 text-xs font-bold text-turquoise-deep">
+          {CATEGORY_LABEL[post.category]}
+        </span>
+      </p>
+      <h1 class="mt-4 text-center font-display text-2xl font-black text-balance text-ink sm:text-3xl md:text-4xl">
+        {post.title}
+      </h1>
+
+      {
+        post.eyecatch_url && (
+          <div class="mt-8 aspect-video overflow-hidden rounded-3xl bg-ink/5">
+            <img src={post.eyecatch_url} alt="" class="h-full w-full object-cover" />
+          </div>
+        )
+      }
+
+      <div class="prose-blog mt-10" set:html={post.content_html} />
+
+      <div class="mt-14 text-center">
+        <a
+          href="/blog"
+          class="inline-block rounded-full bg-ink/5 px-6 py-3 text-sm font-bold text-ink-soft transition-colors hover:bg-turquoise/10"
+        >
+          ← 一覧に戻る
+        </a>
+      </div>
+    </div>
+  </article>
+</PageLayout>

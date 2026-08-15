@@ -1,0 +1,188 @@
+---
+interface Props {
+  /** フォーム内でこのエディタを一意に識別するID(例: "content", "body") */
+  id: string;
+  initialHtml?: string;
+}
+
+const { id, initialHtml = "" } = Astro.props;
+---
+
+<div class="overflow-hidden rounded-2xl border border-ink/10 bg-white" data-editor-root={id}>
+  <div class="flex flex-wrap items-center gap-1 border-b border-ink/10 bg-ink/[0.02] p-2">
+    <button type="button" data-cmd="h1" class="editor-btn">H1</button>
+    <button type="button" data-cmd="h2" class="editor-btn">H2</button>
+    <button type="button" data-cmd="h3" class="editor-btn">H3</button>
+    <span class="mx-1 h-5 w-px bg-ink/10"></span>
+    <button type="button" data-cmd="bold" class="editor-btn font-black">B</button>
+    <button type="button" data-cmd="italic" class="editor-btn italic">I</button>
+    <span class="mx-1 h-5 w-px bg-ink/10"></span>
+    <button type="button" data-cmd="bulletList" class="editor-btn">・リスト</button>
+    <button type="button" data-cmd="orderedList" class="editor-btn">1. リスト</button>
+    <button type="button" data-cmd="blockquote" class="editor-btn">引用</button>
+    <span class="mx-1 h-5 w-px bg-ink/10"></span>
+    <button type="button" data-cmd="link" class="editor-btn">リンク</button>
+    <button type="button" data-cmd="image" class="editor-btn">画像挿入</button>
+  </div>
+  <div class="prose-blog min-h-[320px] max-w-none p-4 focus:outline-none" data-editor-content></div>
+  <input type="hidden" data-editor-html-input value={initialHtml} />
+  <input type="file" accept="image/*" class="hidden" data-editor-file-input />
+</div>
+
+<script is:inline define:vars={{ rootId: id, initialHtml }}>
+  window.__ADMIN_EDITOR_INIT__ ??= [];
+  window.__ADMIN_EDITOR_INIT__.push({ rootId, initialHtml });
+</script>
+
+<script>
+  import { Editor } from "@tiptap/core";
+  import StarterKit from "@tiptap/starter-kit";
+  import Image from "@tiptap/extension-image";
+  import { fileToDataUrl, MAX_DATA_URL_LENGTH } from "../../lib/client-image";
+
+  declare global {
+    interface Window {
+      __ADMIN_EDITOR_INIT__?: { rootId: string; initialHtml: string }[];
+      __adminEditors?: Record<string, Editor>;
+    }
+  }
+
+  type CommandId =
+    | "h1"
+    | "h2"
+    | "h3"
+    | "bold"
+    | "italic"
+    | "bulletList"
+    | "orderedList"
+    | "blockquote"
+    | "link"
+    | "image";
+
+  const ACTIVE_CHECKS: Partial<Record<CommandId, (editor: Editor) => boolean>> = {
+    h1: (editor) => editor.isActive("heading", { level: 1 }),
+    h2: (editor) => editor.isActive("heading", { level: 2 }),
+    h3: (editor) => editor.isActive("heading", { level: 3 }),
+    bold: (editor) => editor.isActive("bold"),
+    italic: (editor) => editor.isActive("italic"),
+    bulletList: (editor) => editor.isActive("bulletList"),
+    orderedList: (editor) => editor.isActive("orderedList"),
+    blockquote: (editor) => editor.isActive("blockquote"),
+    link: (editor) => editor.isActive("link"),
+  };
+
+  function initEditor(rootId: string, initialHtml: string) {
+    const root = document.querySelector(`[data-editor-root="${rootId}"]`);
+    if (!root) return;
+
+    const contentEl = root.querySelector<HTMLElement>("[data-editor-content]");
+    const hiddenInput = root.querySelector<HTMLInputElement>("[data-editor-html-input]");
+    const fileInput = root.querySelector<HTMLInputElement>("[data-editor-file-input]");
+    const buttons = root.querySelectorAll<HTMLButtonElement>("[data-cmd]");
+
+    const editor = new Editor({
+      element: contentEl ?? undefined,
+      extensions: [StarterKit.configure({ link: { openOnClick: false } }), Image],
+      content: initialHtml || "<p></p>",
+      onUpdate: ({ editor }) => {
+        if (hiddenInput) hiddenInput.value = editor.getHTML();
+        updateToolbarState();
+      },
+      onSelectionUpdate: () => updateToolbarState(),
+    });
+
+    function updateToolbarState() {
+      buttons.forEach((btn) => {
+        const cmd = btn.getAttribute("data-cmd") as CommandId | null;
+        const check = cmd ? ACTIVE_CHECKS[cmd] : undefined;
+        btn.classList.toggle("is-active", !!check?.(editor));
+      });
+    }
+
+    if (hiddenInput) hiddenInput.value = editor.getHTML();
+
+    window.__adminEditors ??= {};
+    window.__adminEditors[rootId] = editor;
+
+    buttons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const cmd = btn.getAttribute("data-cmd") as CommandId | null;
+        const chain = editor.chain().focus();
+        switch (cmd) {
+          case "h1":
+            chain.toggleHeading({ level: 1 }).run();
+            break;
+          case "h2":
+            chain.toggleHeading({ level: 2 }).run();
+            break;
+          case "h3":
+            chain.toggleHeading({ level: 3 }).run();
+            break;
+          case "bold":
+            chain.toggleBold().run();
+            break;
+          case "italic":
+            chain.toggleItalic().run();
+            break;
+          case "bulletList":
+            chain.toggleBulletList().run();
+            break;
+          case "orderedList":
+            chain.toggleOrderedList().run();
+            break;
+          case "blockquote":
+            chain.toggleBlockquote().run();
+            break;
+          case "link": {
+            const url = window.prompt("リンク先URLを入力してください");
+            if (url) chain.extendMarkRange("link").setLink({ href: url }).run();
+            break;
+          }
+          case "image":
+            fileInput?.click();
+            break;
+        }
+        updateToolbarState();
+      });
+    });
+
+    fileInput?.addEventListener("change", async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+
+      try {
+        const dataUrl = await fileToDataUrl(file, 1600, 0.82);
+        if (dataUrl.length > MAX_DATA_URL_LENGTH) {
+          window.alert("画像サイズが大きすぎます。別の画像を選んでください。");
+        } else {
+          editor.chain().focus().setImage({ src: dataUrl }).run();
+        }
+      } catch {
+        window.alert("画像の読み込みに失敗しました");
+      }
+      fileInput.value = "";
+    });
+  }
+
+  (window.__ADMIN_EDITOR_INIT__ || []).forEach(({ rootId, initialHtml }) => {
+    initEditor(rootId, initialHtml);
+  });
+</script>
+
+<style>
+  .editor-btn {
+    border-radius: 9999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-ink-soft);
+    transition: background-color 0.2s;
+  }
+  .editor-btn:hover {
+    background: color-mix(in srgb, var(--color-turquoise) 10%, transparent);
+  }
+  .editor-btn.is-active {
+    background: var(--color-turquoise-deep);
+    color: white;
+  }
+</style>

@@ -2,8 +2,17 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "hp",
   "compatibility_date": "2026-08-11",
+  "main": "@astrojs/cloudflare/entrypoints/server",
   "assets": {
-    "directory": "./dist",
+    "directory": "./dist/client",
+    "binding": "ASSETS",
     "not_found_handling": "404-page"
-  }
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "korekalab-db",
+      "database_id": "482f19a8-d6a9-4f69-b07e-5d0210bf9843"
+    }
+  ]
 }

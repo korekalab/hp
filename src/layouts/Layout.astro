@@ -60,7 +60,7 @@ const structuredData = {
     <meta name="twitter:image" content={ogImage} />
 
     <!-- 構造化データ -->
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
 
     <!--
       Google Analytics を追加する場合はここに gtag.js のスクリプトタグを追加するだけでよい。

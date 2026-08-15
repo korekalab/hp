@@ -1,78 +1,119 @@
 # コレカラボ公式サイト (korekalab.com)
 
-「これか！」と思ったら、やってみる。を1ページのスクロールで伝える、コレカラボのコーポレートサイトです。
+「これか！」と思ったら、やってみる。を1ページのスクロールで伝える、コレカラボのコーポレートサイト。トップページ(`/`)は完全な静的ページ、`/blog`（事例・ノウハウ）と`/news`（お知らせ）はノーコード管理画面から更新できるDB連動のページになっている。
 
 ## 技術構成と選定理由
 
 | 項目             | 選定                                    |
 | ---------------- | --------------------------------------- |
-| フレームワーク   | [Astro](https://astro.build/)（静的出力）|
+| フレームワーク   | [Astro](https://astro.build/)（`output: "server"`、トップページ等は`prerender`で静的化）|
 | スタイリング     | Tailwind CSS v4 (`@tailwindcss/vite`)   |
-| ホスティング     | Cloudflare Workers（Static Assets）      |
+| ホスティング     | Cloudflare Workers（`@astrojs/cloudflare`アダプタ + Static Assets）|
+| DB               | Cloudflare D1（ブログ記事・お知らせ）    |
+| 画像保存         | D1にBase64で保存（クレジットカード登録なしで完結。詳細は後述）|
+| リッチエディタ   | [TipTap](https://tiptap.dev/) core（vanilla JS、フレームワーク依存なし）|
+| 管理画面認証     | 共有パスワード + 署名付きCookie（セッションテーブル不要）|
 | フォント         | Fontsource（M PLUS Rounded 1c / Noto Sans JP、セルフホスト）|
-| CMS / DB         | なし（コンテンツはリポジトリ内の TypeScript データファイル）|
 
 ### なぜ Astro か
 
-- **1ページのコーポレートLP**という規模に対して、Next.js や Remix のようなフルスタックフレームワークは過剰。Astro はデフォルトでクライアントJSをほぼ出力しない「Islands」構成のため、この規模のサイトで最速の表示速度を実現できる。
-- ビルド成果物が完全な静的HTML/CSS/JSになるため、**Cloudflare（Workers Static Assets）に無料枠で安定してデプロイ**できる（サーバーレス関数やDBは一切不要）。
-- `sitemap.xml`・OGP・構造化データなど**SEO関連の機能が標準/公式インテグレーションで揃っている**（`@astrojs/sitemap` など）。
-- コンポーネント指向で、`src/data/*.ts` にコンテンツを分離しているため、**非エンジニアでも配列に1項目追加するだけで**プロジェクトや実験を追加できる。
+- トップページのような**完全な静的1ページLP**と、`/blog` `/admin` のような**DBを伴う動的ページ**が同じサイト内に混在する。Astroは`output: "server"`のもとでもページ単位で`export const prerender = true`を指定でき、トップページ(`index.astro`)・`404.astro`は今まで通り完全静的なまま、ブログ/お知らせ/管理画面だけをオンデマンドSSR化できる。この使い分けが必要だったのがAstroを選んだ最大の理由。
+- `@astrojs/cloudflare`アダプタにより、D1・R2などのCloudflareバインディングにそのままアクセスできる。
+- コンポーネント指向で、既存の静的セクションの資産（`src/data/*.ts`のパターンやTailwindの意匠）をそのままブログ/管理画面にも流用できた。
 
-Vite/React SPA や素のHTMLも検討したが、SEO（メタタグ・sitemap・構造化データ）の扱いやすさ、将来ページが増えた場合の拡張性を考慮しAstroを採用した。
+### なぜR2を使わずD1にBase64で画像を保存しているか
+
+Cloudflare R2は無料枠があるものの、**有効化にクレジットカード登録が必須**という制約がある。今回はそれを避けたいという要望があったため、アップロードされた画像はブラウザのCanvasで最大辺1200〜1600px程度にリサイズ・JPEG圧縮してからBase64文字列に変換し、D1のTEXTカラム（`eyecatch_url` / `content_html`内の`<img>`）にそのまま保存している（`src/lib/client-image.ts`）。1枚あたり500KB程度を上限にクライアント側でチェックしており、通常のブログ運用であれば実用上問題ない設計。将来的に画像点数・容量が大きく増えた場合はR2への移行を検討する。
 
 ## ディレクトリ構成
 
 ```text
 /
-├── public/                 favicon, OGP画像, robots.txt, _headers など（そのまま配信される）
+├── migrations/0001_init.sql   D1スキーマ(posts, news テーブル)
+├── public/                     favicon, OGP画像, robots.txt, _headers
 ├── src/
-│   ├── assets/              ロゴなど、ビルド時に処理する元画像
-│   ├── components/          セクションごとのAstroコンポーネント
-│   │   └── icons/           SVGアイコンコンポーネント
-│   ├── data/                 コンテンツデータ（ここを編集すれば内容更新できる）
-│   │   ├── site.ts           サイト全体の設定（タイトル・説明文・メールアドレス等）
-│   │   ├── projects.ts       「今、やっていること」カード
-│   │   ├── experiments.ts    「実験中。」に載せるプロダクト一覧
-│   │   └── flow.ts           「HOW WE DO」の5ステップ
-│   ├── layouts/Layout.astro  head内のメタタグ・OGP・構造化データ・共通script
-│   ├── pages/index.astro     1ページ分のセクションを並べるだけ
-│   └── styles/global.css     Tailwindテーマ（ブランドカラー・フォント・アニメーション）
-└── wrangler.jsonc           Cloudflare Workers (Static Assets) 向け設定
+│   ├── assets/                  ロゴなど、ビルド時に処理する元画像
+│   ├── components/
+│   │   ├── icons/                ホームページ用SVGアイコン
+│   │   ├── blog/                 BlogCard / CategoryTabs / PopularSidebar
+│   │   ├── news/                 NewsAccordionItem
+│   │   └── admin/                AdminEditorScript(TipTap) / EyecatchUploader
+│   ├── data/                    静的コンテンツ(トップページ用)
+│   ├── layouts/
+│   │   ├── Layout.astro           head内のメタタグ・OGP・構造化データ
+│   │   ├── PageLayout.astro       Layout+Header+Footer(/blog, /news用)
+│   │   └── AdminLayout.astro      管理画面用レイアウト(noindex)
+│   ├── lib/
+│   │   ├── db.ts                  D1クエリヘルパー
+│   │   ├── auth.ts                管理画面セッションCookieの署名/検証
+│   │   ├── categories.ts          ブログカテゴリ定義
+│   │   ├── slugify.ts / excerpt.ts
+│   │   └── client-image.ts        画像リサイズ→Base64変換(ブラウザ側)
+│   ├── middleware.ts             /admin, /api/admin の認証ガード
+│   └── pages/
+│       ├── index.astro / 404.astro   静的(prerender)
+│       ├── blog/                     一覧・詳細(SSR)
+│       ├── news/                     一覧(SSR)
+│       ├── admin/                    管理画面(要ログイン)
+│       └── api/admin/                管理画面用API
+└── wrangler.jsonc               D1バインディング等を含むCloudflare設定
 ```
 
 ## コンテンツの追加・編集方法
 
-すべて `src/data/` 配下のファイルを編集するだけで反映されます。
+### トップページ(静的セクション)
 
-- **「今、やっていること」のカードを増やす／減らす／並び替える** → `src/data/projects.ts` の配列を編集。`url` を設定すると自動的にカードがリンクになります。
-- **「実験中。」にプロダクトを追加する** → `src/data/experiments.ts` の `experiments` 配列に `{ id, name, description, status, url? }` を追加。`status` は `developing` / `released` / `testing` / `closed` から選択（終了した実験も `closed` として残すことで、失敗も含めた実験の履歴になります）。配列が空の間は「ここには、これからいろいろ増えていきます。」というプレースホルダーが表示されます。
-- **サイトタイトル・説明文・問い合わせ先メール** → `src/data/site.ts`
+`src/data/*.ts` を編集するだけで反映される(従来通り)。
+
+- 「今、やっていること」カード → `src/data/projects.ts`
+- 「実験中。」のプロダクト一覧 → `src/data/experiments.ts`
+- サイトタイトル・説明文・問い合わせ先 → `src/data/site.ts`
+
+### ブログ(事例・ノウハウ)・お知らせ
+
+`/admin` のノーコード管理画面から追加・編集する。共有パスワードでログイン後、記事のタイトル・リンク(スラッグ)・カテゴリ・アイキャッチ画像・本文(TipTapエディタでH1〜H3・太字・画像挿入など)・公開/非公開を設定できる。エンジニアの操作は不要。
 
 ## 開発
 
 ```sh
 npm install
-npm run dev       # http://localhost:4321
+npm run dev       # http://localhost:4321 (astro dev / workerd上で動作)
+npm run build     # ./dist/ に出力(client=静的アセット, server=Workerスクリプト)
+npm run astro check   # 型チェック
 ```
 
+### ローカルでD1・管理画面を使うための初回セットアップ
+
 ```sh
-npm run build     # ./dist/ に静的ファイルを出力
-npm run preview   # ビルド結果をローカルで確認
+# .dev.vars を作成(gitignore対象)し、以下2行を記入
+# ADMIN_PASSWORD=好きなパスワード
+# SESSION_SECRET=openssl rand -base64 32 などで生成したランダム文字列
+
+npx wrangler d1 migrations apply korekalab-db --local
 ```
 
 ## Cloudflare へのデプロイ
 
-Cloudflare は Pages と Workers を統合しており、本プロジェクトは **Workers Static Assets**（静的アセットのみのWorker）としてデプロイする構成になっている。`wrangler.jsonc` の `assets.directory` がビルド出力先 `dist` を指しており、サーバーサイドの処理（`main` エントリーポイント）は一切持たない、完全な静的サイトとして配信される。
+本プロジェクトは `@astrojs/cloudflare` アダプタによる **Workers（SSR + Static Assets 併用）** 構成。`wrangler.jsonc` の `main` は Astro アダプタが提供する統一エントリーポイント(`@astrojs/cloudflare/entrypoints/server`)を指定しており、`astro build` の出力(`dist/client` = 静的アセット, `dist/server` = Workerスクリプト)をそのままデプロイできる。
 
-### 方法A: Cloudflare ダッシュボードでGitHub連携（推奨）
+### 初回のみ: Cloudflareリソース作成
 
-1. このリポジトリをGitHubにpushする
-2. Cloudflare ダッシュボード → Workers & Pages → 「Gitに接続」でこのリポジトリを選択
-3. ビルド設定（ダッシュボードが `wrangler.jsonc` を検出して自動入力する）
+```sh
+npx wrangler login
+npx wrangler d1 create korekalab-db      # database_id を wrangler.jsonc に転記済み
+npx wrangler secret put ADMIN_PASSWORD   # 管理画面の共有パスワード
+npx wrangler secret put SESSION_SECRET   # ランダムな長い文字列
+npx wrangler d1 migrations apply korekalab-db --remote   # 本番DBにテーブル作成
+```
+
+### 方法A: Cloudflare ダッシュボードでGitHub連携（推奨・現在の運用方法）
+
+1. リポジトリをGitHubにpush
+2. Cloudflare ダッシュボード → Workers & Pages → 「Gitに接続」
+3. ビルド設定
    - ビルドコマンド: `npm run build`
    - デプロイコマンド: `npx wrangler deploy`
-4. デプロイ後、プロジェクトの「カスタムドメイン」設定から `korekalab.com` を追加（ドメインのゾーンが同じCloudflareアカウントに存在している必要がある）
+4. カスタムドメイン `korekalab.com` を追加
 
 ### 方法B: Wrangler CLI で手動デプロイ
 
@@ -81,20 +122,17 @@ npm run build
 npx wrangler deploy
 ```
 
-設定内容は `npx wrangler deploy --dry-run` で事前検証できる。
-
 ## Google Analytics の追加方法
 
-現時点ではアナリティクスは未導入です。導入する場合は `src/layouts/Layout.astro` の `<head>` 内にあるコメント部分に gtag.js のスクリプトタグを追加するだけで有効になります（サイト全体に反映されます）。
+`src/layouts/Layout.astro` の `<head>` 内にあるコメント部分に gtag.js のスクリプトタグを追加するだけで有効になる(サイト全体に反映)。
 
 ## SEO / メタデータ
 
-- `title` / `description` / OGP / Twitter Card: `src/layouts/Layout.astro`（`src/data/site.ts` の値を利用）
+- `title` / `description` / OGP / Twitter Card: `src/layouts/Layout.astro`
 - 構造化データ（Organization / JSON-LD）: `src/layouts/Layout.astro`
-- `sitemap.xml`: `@astrojs/sitemap` により `npm run build` 時に自動生成（`astro.config.mjs` の `site` を参照）
-- `robots.txt`: `public/robots.txt`
-- favicon一式（ico / svg / apple-touch-icon / android-chrome）: `public/`
+- `sitemap.xml`: `@astrojs/sitemap` により自動生成
+- `robots.txt`: `public/robots.txt`（`/admin` `/api` はDisallow、管理画面ページ自体にも`noindex`メタタグあり）
 
 ## アクセシビリティ / モーション
 
-`prefers-reduced-motion: reduce` が指定された環境では、`src/styles/global.css` の設定によりスクロールアニメーション・浮遊アニメーションが無効化されます。
+`prefers-reduced-motion: reduce` が指定された環境では、`src/styles/global.css` の設定によりスクロールアニメーション・浮遊アニメーションが無効化される。

@@ -1,4 +1,6 @@
 ---
+// /blog/[slug] など on-demand ルートから Astro.rewrite("/404") で参照するため、
+// このページ自体もprerenderしない(prerenderされた静的ページはrewrite先にできない)。
 import Layout from "../layouts/Layout.astro";
 import { SITE } from "../data/site";
 ---

@@ -1,0 +1,61 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../layouts/AdminLayout.astro";
+import { createSessionValue, SESSION_COOKIE_NAME, SESSION_MAX_AGE_SECONDS } from "../../lib/auth";
+
+export const prerender = false;
+
+const nextParam = Astro.url.searchParams.get("next");
+const redirectTarget = nextParam && nextParam.startsWith("/admin") ? nextParam : "/admin";
+
+let error = "";
+
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const password = formData.get("password");
+
+  if (typeof password === "string" && password.length > 0 && password === env.ADMIN_PASSWORD) {
+    const value = await createSessionValue(env.SESSION_SECRET);
+    Astro.cookies.set(SESSION_COOKIE_NAME, value, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      path: "/",
+      maxAge: SESSION_MAX_AGE_SECONDS,
+    });
+    return Astro.redirect(redirectTarget);
+  }
+  error = "パスワードが正しくありません。";
+}
+---
+
+<AdminLayout title="ログイン" showNav={false}>
+  <div class="mx-auto max-w-sm">
+    <div class="rounded-3xl border border-ink/5 bg-white p-8 shadow-sm">
+      <h1 class="font-display text-xl font-black text-ink">管理画面ログイン</h1>
+      <p class="mt-2 text-sm text-ink-soft">共有パスワードを入力してください。</p>
+
+      {error && <p class="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600">{error}</p>}
+
+      <form method="POST" class="mt-6 space-y-4">
+        <div>
+          <label for="password" class="text-sm font-bold text-ink">パスワード</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            required
+            autofocus
+            class="mt-1 w-full rounded-xl border border-ink/10 px-4 py-2.5 text-ink outline-none focus:border-turquoise-deep"
+          />
+        </div>
+        <button
+          type="submit"
+          class="w-full rounded-full bg-turquoise-deep px-6 py-3 font-display font-bold text-white transition-colors hover:bg-ink"
+        >
+          ログイン
+        </button>
+      </form>
+    </div>
+  </div>
+</AdminLayout>

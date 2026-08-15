@@ -1,0 +1,88 @@
+---
+import { env } from "cloudflare:workers";
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import { listAllPosts } from "../../../lib/db";
+import { CATEGORY_LABEL } from "../../../lib/categories";
+
+export const prerender = false;
+
+const posts = await listAllPosts(env.DB);
+---
+
+<AdminLayout title="ブログ記事">
+  <div class="flex items-center justify-between">
+    <h1 class="font-display text-2xl font-black text-ink">ブログ記事</h1>
+    <a
+      href="/admin/posts/new"
+      class="rounded-full bg-turquoise-deep px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-ink"
+    >
+      + 新規作成
+    </a>
+  </div>
+
+  <div class="mt-8 overflow-hidden rounded-3xl border border-ink/5 bg-white">
+    {
+      posts.length === 0 ? (
+        <p class="p-8 text-center text-ink-soft">まだ記事がありません。</p>
+      ) : (
+        <table class="w-full text-left text-sm">
+          <thead class="border-b border-ink/5 bg-ink/[0.02] text-xs font-bold text-ink-soft">
+            <tr>
+              <th class="px-5 py-3">タイトル</th>
+              <th class="px-5 py-3">カテゴリ</th>
+              <th class="px-5 py-3">状態</th>
+              <th class="px-5 py-3">閲覧数</th>
+              <th class="px-5 py-3" />
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-ink/5">
+            {posts.map((post) => (
+              <tr>
+                <td class="px-5 py-3 font-bold text-ink">{post.title}</td>
+                <td class="px-5 py-3 text-ink-soft">{CATEGORY_LABEL[post.category]}</td>
+                <td class="px-5 py-3">
+                  <span
+                    class={
+                      post.published
+                        ? "rounded-full bg-turquoise/10 px-3 py-1 text-xs font-bold text-turquoise-deep"
+                        : "rounded-full bg-ink/5 px-3 py-1 text-xs font-bold text-ink-soft"
+                    }
+                  >
+                    {post.published ? "公開中" : "下書き"}
+                  </span>
+                </td>
+                <td class="px-5 py-3 text-ink-soft">{post.view_count}</td>
+                <td class="px-5 py-3">
+                  <div class="flex items-center justify-end gap-2">
+                    <a
+                      href={`/admin/posts/${post.id}/edit`}
+                      class="rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-ink/10"
+                    >
+                      編集
+                    </a>
+                    <form method="POST" action={`/api/admin/posts/${post.id}/toggle`}>
+                      <button
+                        type="submit"
+                        class="rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-turquoise/10"
+                      >
+                        {post.published ? "非公開にする" : "公開する"}
+                      </button>
+                    </form>
+                    <form method="POST" action={`/api/admin/posts/${post.id}/delete`} data-confirm="この記事を削除しますか？">
+                      <button
+                        type="submit"
+                        class="rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-red-50 hover:text-red-600"
+                      >
+                        削除
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )
+    }
+  </div>
+</AdminLayout>

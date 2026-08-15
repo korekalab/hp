@@ -1,0 +1,65 @@
+---
+interface Props {
+  initialUrl?: string | null;
+}
+
+const { initialUrl = null } = Astro.props;
+---
+
+<div data-eyecatch-root>
+  <div class="flex items-center gap-4">
+    <div class="aspect-video w-40 shrink-0 overflow-hidden rounded-xl bg-ink/5" data-eyecatch-preview-wrap>
+      {
+        initialUrl ? (
+          <img src={initialUrl} alt="" class="h-full w-full object-cover" />
+        ) : (
+          <div class="flex h-full items-center justify-center text-xs text-ink-soft/60">未設定</div>
+        )
+      }
+    </div>
+    <div>
+      <label
+        class="inline-block cursor-pointer rounded-full bg-ink/5 px-4 py-2 text-sm font-bold text-ink-soft transition-colors hover:bg-ink/10"
+      >
+        画像を選択
+        <input type="file" accept="image/*" class="hidden" data-eyecatch-file-input />
+      </label>
+      <p class="mt-2 text-xs text-ink-soft/70">16:9で表示されます</p>
+    </div>
+  </div>
+  <input type="hidden" name="eyecatch_url" value={initialUrl ?? ""} data-eyecatch-url-input />
+</div>
+
+<script>
+  import { fileToDataUrl, MAX_DATA_URL_LENGTH } from "../../lib/client-image";
+
+  document.querySelectorAll("[data-eyecatch-root]").forEach((root) => {
+    const fileInput = root.querySelector<HTMLInputElement>("[data-eyecatch-file-input]");
+    const urlInput = root.querySelector<HTMLInputElement>("[data-eyecatch-url-input]");
+    const previewWrap = root.querySelector<HTMLElement>("[data-eyecatch-preview-wrap]");
+
+    fileInput?.addEventListener("change", async () => {
+      const file = fileInput.files?.[0];
+      if (!file) return;
+
+      try {
+        const dataUrl = await fileToDataUrl(file, 1200, 0.82);
+        if (dataUrl.length > MAX_DATA_URL_LENGTH) {
+          window.alert("画像サイズが大きすぎます。別の画像を選んでください。");
+          return;
+        }
+        if (urlInput) urlInput.value = dataUrl;
+        if (previewWrap) {
+          previewWrap.innerHTML = "";
+          const img = document.createElement("img");
+          img.src = dataUrl;
+          img.alt = "";
+          img.className = "h-full w-full object-cover";
+          previewWrap.appendChild(img);
+        }
+      } catch {
+        window.alert("画像の読み込みに失敗しました");
+      }
+    });
+  });
+</script>
