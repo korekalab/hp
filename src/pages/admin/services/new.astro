@@ -1,0 +1,130 @@
+---
+import AdminLayout from "../../../layouts/AdminLayout.astro";
+import EyecatchUploader from "../../../components/admin/EyecatchUploader.astro";
+import { projectCategories } from "../../../data/projects";
+
+export const prerender = false;
+---
+
+<AdminLayout title="サービスを追加">
+  <h1 class="font-display text-2xl font-black text-ink">サービスを追加</h1>
+
+  <form id="service-form" class="mt-8 space-y-6">
+    <div>
+      <label for="category" class="text-sm font-bold text-ink">ジャンル</label>
+      <select
+        id="category"
+        name="category"
+        required
+        class="mt-1 w-full rounded-xl border border-ink/10 px-4 py-2.5 outline-none focus:border-turquoise-deep"
+      >
+        {projectCategories.map((c) => <option value={c.id}>{c.label}</option>)}
+      </select>
+    </div>
+
+    <div>
+      <label for="name" class="text-sm font-bold text-ink">サービス名</label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        required
+        class="mt-1 w-full rounded-xl border border-ink/10 px-4 py-2.5 outline-none focus:border-turquoise-deep"
+      />
+    </div>
+
+    <div>
+      <label for="url" class="text-sm font-bold text-ink">リンク(サービスページのURL)</label>
+      <input
+        type="url"
+        id="url"
+        name="url"
+        placeholder="https://"
+        class="mt-1 w-full rounded-xl border border-ink/10 px-4 py-2.5 outline-none focus:border-turquoise-deep"
+      />
+      <p class="mt-1 text-xs text-ink-soft/70">未公開のサービスは空欄でも構いません。</p>
+    </div>
+
+    <div>
+      <span class="text-sm font-bold text-ink">アイキャッチ画像</span>
+      <div class="mt-2">
+        <EyecatchUploader />
+      </div>
+    </div>
+
+    <div>
+      <label for="description" class="text-sm font-bold text-ink">説明文</label>
+      <textarea
+        id="description"
+        name="description"
+        rows="4"
+        required
+        class="mt-1 w-full rounded-xl border border-ink/10 px-4 py-2.5 outline-none focus:border-turquoise-deep"
+      />
+    </div>
+
+    <label class="flex items-center gap-2 text-sm font-bold text-ink">
+      <input
+        type="checkbox"
+        id="published"
+        name="published"
+        checked
+        class="h-4 w-4 rounded border-ink/20 text-turquoise-deep focus:ring-turquoise-deep"
+      />
+      公開する
+    </label>
+
+    <p id="form-error" class="hidden rounded-xl bg-red-50 px-4 py-3 text-sm font-bold text-red-600"></p>
+
+    <div class="flex items-center gap-3">
+      <button
+        type="submit"
+        class="rounded-full bg-turquoise-deep px-6 py-3 font-display font-bold text-white transition-colors hover:bg-ink"
+      >
+        保存する
+      </button>
+      <a
+        href="/admin/services"
+        class="rounded-full bg-ink/5 px-6 py-3 text-sm font-bold text-ink-soft transition-colors hover:bg-ink/10"
+      >
+        キャンセル
+      </a>
+    </div>
+  </form>
+</AdminLayout>
+
+<script>
+  const form = document.getElementById("service-form") as HTMLFormElement | null;
+  const errorEl = document.getElementById("form-error");
+
+  form?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorEl?.classList.add("hidden");
+
+    const formData = new FormData(form);
+    const payload = {
+      category: formData.get("category"),
+      name: formData.get("name"),
+      url: formData.get("url") || null,
+      eyecatch_url: formData.get("eyecatch_url") || null,
+      description: formData.get("description"),
+      published: formData.get("published") === "on",
+    };
+
+    const res = await fetch("/api/admin/services", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    if (res.ok) {
+      window.location.href = "/admin/services";
+    } else {
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      if (errorEl) {
+        errorEl.textContent = data.error || "保存に失敗しました。";
+        errorEl.classList.remove("hidden");
+      }
+    }
+  });
+</script>

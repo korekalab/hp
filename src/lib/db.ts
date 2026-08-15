@@ -1,4 +1,5 @@
 import type { CategoryId } from "./categories";
+import type { ProjectIcon } from "../data/projects";
 
 export interface Post {
   id: number;
@@ -178,4 +179,96 @@ export async function toggleNewsPublished(db: D1Database, id: number): Promise<v
 
 export async function deleteNews(db: D1Database, id: number): Promise<void> {
   await db.prepare(`DELETE FROM news WHERE id = ?`).bind(id).run();
+}
+
+// ---------- services ----------
+
+export interface Service {
+  id: number;
+  category: ProjectIcon;
+  name: string;
+  url: string | null;
+  eyecatch_url: string | null;
+  description: string;
+  published: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ServiceInput {
+  category: ProjectIcon;
+  name: string;
+  url: string | null;
+  eyecatch_url: string | null;
+  description: string;
+  published: boolean;
+}
+
+export async function listPublishedServicesByCategory(
+  db: D1Database,
+  category: ProjectIcon
+): Promise<Service[]> {
+  const { results } = await db
+    .prepare(`SELECT * FROM services WHERE category = ? AND published = 1 ORDER BY created_at DESC`)
+    .bind(category)
+    .all<Service>();
+  return results;
+}
+
+export async function listAllServices(db: D1Database): Promise<Service[]> {
+  const { results } = await db
+    .prepare(`SELECT * FROM services ORDER BY created_at DESC`)
+    .all<Service>();
+  return results;
+}
+
+export async function getServiceById(db: D1Database, id: number): Promise<Service | null> {
+  return db.prepare(`SELECT * FROM services WHERE id = ?`).bind(id).first<Service>();
+}
+
+export async function createService(db: D1Database, input: ServiceInput): Promise<number> {
+  const result = await db
+    .prepare(
+      `INSERT INTO services (category, name, url, eyecatch_url, description, published, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, datetime('now'))`
+    )
+    .bind(
+      input.category,
+      input.name,
+      input.url,
+      input.eyecatch_url,
+      input.description,
+      input.published ? 1 : 0
+    )
+    .run();
+  return result.meta.last_row_id as number;
+}
+
+export async function updateService(db: D1Database, id: number, input: ServiceInput): Promise<void> {
+  await db
+    .prepare(
+      `UPDATE services SET category = ?, name = ?, url = ?, eyecatch_url = ?, description = ?,
+       published = ?, updated_at = datetime('now') WHERE id = ?`
+    )
+    .bind(
+      input.category,
+      input.name,
+      input.url,
+      input.eyecatch_url,
+      input.description,
+      input.published ? 1 : 0,
+      id
+    )
+    .run();
+}
+
+export async function toggleServicePublished(db: D1Database, id: number): Promise<void> {
+  await db
+    .prepare(`UPDATE services SET published = 1 - published, updated_at = datetime('now') WHERE id = ?`)
+    .bind(id)
+    .run();
+}
+
+export async function deleteService(db: D1Database, id: number): Promise<void> {
+  await db.prepare(`DELETE FROM services WHERE id = ?`).bind(id).run();
 }

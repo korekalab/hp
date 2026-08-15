@@ -1,14 +1,12 @@
 export type ProjectIcon = "app" | "media" | "marketing" | "event" | "more";
 
 export type ProjectCategory = {
-  id: string;
+  id: ProjectIcon;
   number: string;
   label: string;
   labelEn: string;
   description: string;
   icon: ProjectIcon;
-  /** Set when a dedicated page / external link exists for this category. */
-  url?: string;
 };
 
 /**
@@ -61,3 +59,11 @@ export const projectCategories: ProjectCategory[] = [
     icon: "more",
   },
 ];
+
+export function isProjectCategoryId(value: string | undefined): value is ProjectIcon {
+  return !!value && projectCategories.some((c) => c.id === value);
+}
+
+export function getProjectCategory(id: ProjectIcon): ProjectCategory {
+  return projectCategories.find((c) => c.id === id)!;
+}
