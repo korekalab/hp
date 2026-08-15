@@ -91,6 +91,11 @@ const { id, initialHtml = "" } = Astro.props;
       onSelectionUpdate: () => updateToolbarState(),
     });
 
+    // TipTapのonFocus/onBlurコールバックのタイミングに依存せず、
+    // 実際のcontenteditable DOM要素のフォーカス状態を直接見て枠を強調する
+    editor.view.dom.addEventListener("focus", () => root.classList.add("is-editing"));
+    editor.view.dom.addEventListener("blur", () => root.classList.remove("is-editing"));
+
     function updateToolbarState() {
       buttons.forEach((btn) => {
         const cmd = btn.getAttribute("data-cmd") as CommandId | null;
@@ -184,5 +189,19 @@ const { id, initialHtml = "" } = Astro.props;
   .editor-btn.is-active {
     background: var(--color-turquoise-deep);
     color: white;
+  }
+
+  /* 本文編集エリア。フォーカス中は枠を強調して「今ここを編集している」を分かりやすくする */
+  [data-editor-root] {
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  [data-editor-root].is-editing {
+    border-color: var(--color-turquoise-deep);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-turquoise-deep) 18%, transparent);
+  }
+  [data-editor-content] :global(.ProseMirror) {
+    outline: none;
+    caret-color: var(--color-turquoise-deep);
+    min-height: 280px;
   }
 </style>

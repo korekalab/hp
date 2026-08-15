@@ -1,9 +1,33 @@
 ---
 const lines = [
-  { text: "面白いから、やる。", color: "text-turquoise-deep", align: "text-left", rotate: "-rotate-1" },
-  { text: "まず、やってみる。", color: "text-ink", align: "text-right", rotate: "rotate-1" },
-  { text: "ダメなら、次。", color: "text-sunshine-deep", align: "text-left", rotate: "-rotate-1" },
-  { text: "面白かったら、もっとやる。", color: "text-turquoise-deep", align: "text-right", rotate: "rotate-1" },
+  {
+    texts: ["面白いから、やる。"],
+    color: "text-turquoise-deep",
+    align: "text-left",
+    rotate: "-rotate-1",
+    size: "text-[2.2rem] sm:text-6xl md:text-7xl",
+  },
+  {
+    texts: ["まず、やってみる。"],
+    color: "text-ink",
+    align: "text-right",
+    rotate: "rotate-1",
+    size: "text-[2.2rem] sm:text-6xl md:text-7xl",
+  },
+  {
+    texts: ["ダメなら、次。"],
+    color: "text-sunshine-deep",
+    align: "text-left",
+    rotate: "-rotate-1",
+    size: "text-[2.2rem] sm:text-6xl md:text-7xl",
+  },
+  {
+    texts: ["面白かったら、", "もっとやる。"],
+    color: "text-turquoise-deep",
+    align: "text-right",
+    rotate: "rotate-1",
+    size: "text-[1.9rem] sm:text-5xl md:text-6xl",
+  },
 ];
 ---
 
@@ -19,9 +43,14 @@ const lines = [
         <p
           data-reveal
           style={`transition-delay:${i * 120}ms`}
-          class={`font-display ${line.align} ${line.rotate} text-[2.2rem] font-black leading-[1.2] sm:text-6xl md:text-7xl ${line.color}`}
+          class={`font-display ${line.align} ${line.rotate} ${line.size} font-black leading-[1.2] whitespace-nowrap ${line.color}`}
         >
-          {line.text}
+          {line.texts.map((text, j) => (
+            <>
+              {j > 0 && <br />}
+              {text}
+            </>
+          ))}
         </p>
       ))
     }
