@@ -28,6 +28,8 @@ export const PUT: APIRoute = async ({ params, request }) => {
   const category = typeof body.category === "string" ? body.category : undefined;
   const contentHtml = typeof body.content_html === "string" ? body.content_html : "";
   const eyecatchUrl = typeof body.eyecatch_url === "string" && body.eyecatch_url ? body.eyecatch_url : null;
+  const metaDescriptionRaw = typeof body.meta_description === "string" ? body.meta_description.trim() : "";
+  const metaDescription = metaDescriptionRaw ? metaDescriptionRaw.slice(0, 160) : null;
   const published = !!body.published;
 
   if (!title || !slug || !isCategoryId(category)) {
@@ -45,6 +47,7 @@ export const PUT: APIRoute = async ({ params, request }) => {
     slug,
     category,
     excerpt,
+    meta_description: metaDescription,
     content_html: contentHtml,
     eyecatch_url: eyecatchUrl,
     published,

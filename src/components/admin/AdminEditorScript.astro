@@ -22,6 +22,8 @@ const { id, initialHtml = "" } = Astro.props;
     <button type="button" data-cmd="blockquote" class="editor-btn">引用</button>
     <span class="mx-1 h-5 w-px bg-ink/10"></span>
     <button type="button" data-cmd="link" class="editor-btn">リンク</button>
+    <button type="button" data-cmd="linkButton" class="editor-btn">リンク(ボタン)</button>
+    <button type="button" data-cmd="linkCard" class="editor-btn">リンク(カード)</button>
     <button type="button" data-cmd="image" class="editor-btn">画像挿入</button>
   </div>
   <div class="prose-blog min-h-[320px] max-w-none p-4 focus:outline-none" data-editor-content></div>
@@ -57,6 +59,8 @@ const { id, initialHtml = "" } = Astro.props;
     | "orderedList"
     | "blockquote"
     | "link"
+    | "linkButton"
+    | "linkCard"
     | "image";
 
   const ACTIVE_CHECKS: Partial<Record<CommandId, (editor: Editor) => boolean>> = {
@@ -70,6 +74,36 @@ const { id, initialHtml = "" } = Astro.props;
     blockquote: (editor) => editor.isActive("blockquote"),
     link: (editor) => editor.isActive("link"),
   };
+
+  function insertStyledLink(editor: Editor, cssClass: string, defaultLabel: string) {
+    const url = window.prompt("リンク先URLを入力してください");
+    if (!url) return;
+
+    const { from, to, empty } = editor.state.selection;
+    const selectedText = empty ? "" : editor.state.doc.textBetween(from, to, " ");
+    const label = window.prompt("表示テキストを入力してください", selectedText || defaultLabel);
+    if (!label) return;
+
+    editor
+      .chain()
+      .focus()
+      .insertContent({
+        type: "paragraph",
+        content: [
+          {
+            type: "text",
+            text: label,
+            marks: [
+              {
+                type: "link",
+                attrs: { href: url, target: "_blank", rel: "noopener noreferrer", class: cssClass },
+              },
+            ],
+          },
+        ],
+      })
+      .run();
+  }
 
   function initEditor(rootId: string, initialHtml: string) {
     const root = document.querySelector(`[data-editor-root="${rootId}"]`);
@@ -143,6 +177,12 @@ const { id, initialHtml = "" } = Astro.props;
             if (url) chain.extendMarkRange("link").setLink({ href: url }).run();
             break;
           }
+          case "linkButton":
+            insertStyledLink(editor, "btn-link", "詳しく見る");
+            break;
+          case "linkCard":
+            insertStyledLink(editor, "card-link", "詳しく見る");
+            break;
           case "image":
             fileInput?.click();
             break;

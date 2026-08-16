@@ -14,7 +14,7 @@ if (!post) {
 await incrementViewCount(env.DB, post.id);
 ---
 
-<PageLayout title={`${post.title}｜コレカラボ`} description={post.excerpt}>
+<PageLayout title={`${post.title}｜コレカラボ`} description={post.meta_description || post.excerpt}>
   <article class="px-6 py-16 sm:py-20">
     <div class="mx-auto max-w-3xl">
       <p class="text-center">

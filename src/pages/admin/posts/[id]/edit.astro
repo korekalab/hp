@@ -66,6 +66,22 @@ if (!post) {
     </div>
 
     <div>
+      <label for="meta_description" class="text-sm font-bold text-ink">メタディスクリプション(SEO用)</label>
+      <textarea
+        id="meta_description"
+        name="meta_description"
+        rows="3"
+        maxlength="160"
+        placeholder="検索結果に表示される説明文です。空欄の場合は本文から自動生成されます。"
+        class="mt-1 w-full rounded-xl border border-ink/10 px-4 py-2.5 outline-none focus:border-turquoise-deep"
+        set:text={post.meta_description ?? ""}
+      />
+      <p class="mt-1 text-xs text-ink-soft/70">
+        <span id="meta-description-count">{(post.meta_description ?? "").length}</span>/160文字。Google検索結果の説明文として使われます。
+      </p>
+    </div>
+
+    <div>
       <span class="text-sm font-bold text-ink">アイキャッチ画像</span>
       <div class="mt-2">
         <EyecatchUploader initialUrl={post.eyecatch_url} />
@@ -126,6 +142,12 @@ if (!post) {
     if (!slugTouched && slugInput) slugInput.value = slugify(titleInput.value);
   });
 
+  const metaDescriptionInput = document.getElementById("meta_description") as HTMLTextAreaElement | null;
+  const metaDescriptionCount = document.getElementById("meta-description-count");
+  metaDescriptionInput?.addEventListener("input", () => {
+    if (metaDescriptionCount) metaDescriptionCount.textContent = String(metaDescriptionInput.value.length);
+  });
+
   const form = document.getElementById("post-form") as HTMLFormElement | null;
   const errorEl = document.getElementById("form-error");
 
@@ -140,6 +162,7 @@ if (!post) {
       title: formData.get("title"),
       slug: formData.get("slug"),
       category: formData.get("category"),
+      meta_description: formData.get("meta_description") || null,
       eyecatch_url: formData.get("eyecatch_url") || null,
       content_html: contentHtml,
       published: formData.get("published") === "on",

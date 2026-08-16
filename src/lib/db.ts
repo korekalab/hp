@@ -7,6 +7,7 @@ export interface Post {
   slug: string;
   category: CategoryId;
   excerpt: string;
+  meta_description: string | null;
   content_html: string;
   eyecatch_url: string | null;
   published: number;
@@ -28,6 +29,7 @@ export interface PostInput {
   slug: string;
   category: CategoryId;
   excerpt: string;
+  meta_description: string | null;
   content_html: string;
   eyecatch_url: string | null;
   published: boolean;
@@ -82,14 +84,15 @@ export async function slugExists(db: D1Database, slug: string, excludeId?: numbe
 export async function createPost(db: D1Database, input: PostInput): Promise<number> {
   const result = await db
     .prepare(
-      `INSERT INTO posts (title, slug, category, excerpt, content_html, eyecatch_url, published, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))`
+      `INSERT INTO posts (title, slug, category, excerpt, meta_description, content_html, eyecatch_url, published, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))`
     )
     .bind(
       input.title,
       input.slug,
       input.category,
       input.excerpt,
+      input.meta_description,
       input.content_html,
       input.eyecatch_url,
       input.published ? 1 : 0
@@ -101,7 +104,7 @@ export async function createPost(db: D1Database, input: PostInput): Promise<numb
 export async function updatePost(db: D1Database, id: number, input: PostInput): Promise<void> {
   await db
     .prepare(
-      `UPDATE posts SET title = ?, slug = ?, category = ?, excerpt = ?, content_html = ?,
+      `UPDATE posts SET title = ?, slug = ?, category = ?, excerpt = ?, meta_description = ?, content_html = ?,
        eyecatch_url = ?, published = ?, updated_at = datetime('now') WHERE id = ?`
     )
     .bind(
@@ -109,6 +112,7 @@ export async function updatePost(db: D1Database, id: number, input: PostInput): 
       input.slug,
       input.category,
       input.excerpt,
+      input.meta_description,
       input.content_html,
       input.eyecatch_url,
       input.published ? 1 : 0,

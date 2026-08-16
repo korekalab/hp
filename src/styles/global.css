@@ -153,6 +153,55 @@ summary::marker {
   font-size: 0.9em;
 }
 
+/* 記事内に挿入する「リンクをボタン化/カード化」した際の見た目 */
+.prose-blog a.btn-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-top: 1.5em;
+  padding: 0.75em 1.75em;
+  border-radius: 9999px;
+  background: var(--color-turquoise-deep);
+  color: white;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+.prose-blog a.btn-link:hover {
+  background: var(--color-ink);
+}
+.prose-blog a.btn-link::after {
+  content: "→";
+}
+.prose-blog a.card-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1em;
+  margin-top: 1.5em;
+  padding: 1.25em 1.5em;
+  border-radius: 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
+  background: white;
+  color: var(--color-ink);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--color-ink) 5%, transparent);
+  transition:
+    box-shadow 0.2s,
+    border-color 0.2s;
+}
+.prose-blog a.card-link:hover {
+  border-color: var(--color-turquoise);
+  box-shadow: 0 8px 20px color-mix(in srgb, var(--color-turquoise-deep) 15%, transparent);
+}
+.prose-blog a.card-link::after {
+  content: "↗";
+  flex-shrink: 0;
+  color: var(--color-turquoise-deep);
+  font-size: 1.25em;
+}
+
 /* scroll-reveal: JS toggles [data-visible] on scroll; fallback = always visible */
 [data-reveal] {
   opacity: 0;
