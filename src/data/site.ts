@@ -9,4 +9,6 @@ export const SITE = {
   email: "info@korekalab.com",
   locale: "ja_JP",
   themeColor: "#10BFB8",
+  /** Google Analytics 4 測定ID。使わない場合は空文字にすればタグは出力されない。 */
+  gaMeasurementId: "G-6YMBK4Y7BV",
 } as const;

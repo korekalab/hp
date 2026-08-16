@@ -62,17 +62,22 @@ const structuredData = {
     <!-- 構造化データ -->
     <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
 
-    <!--
-      Google Analytics を追加する場合はここに gtag.js のスクリプトタグを追加するだけでよい。
-      例:
-      <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
-      <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-XXXXXXX');
-      </script>
-    -->
+    <!-- Google Analytics (GA4)。SITE.gaMeasurementId を空にすれば出力されない -->
+    {
+      SITE.gaMeasurementId && (
+        <>
+          <script async is:inline src={`https://www.googletagmanager.com/gtag/js?id=${SITE.gaMeasurementId}`} />
+          <script is:inline define:vars={{ gaId: SITE.gaMeasurementId }}>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+              dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+            gtag("config", gaId);
+          </script>
+        </>
+      )
+    }
   </head>
   <body class="antialiased">
     <slot />

@@ -126,9 +126,9 @@ npm run build
 npx wrangler deploy
 ```
 
-## Google Analytics の追加方法
+## Google Analytics (GA4)
 
-`src/layouts/Layout.astro` の `<head>` 内にあるコメント部分に gtag.js のスクリプトタグを追加するだけで有効になる(サイト全体に反映)。
+`src/data/site.ts` の `gaMeasurementId` に測定ID(`G-XXXXXXX`)を設定すると、`src/layouts/Layout.astro` が自動でgtag.jsを出力する(全ページに反映)。測定を止めたい場合は空文字にすればタグ自体が出力されなくなる。
 
 ## SEO / メタデータ
 
