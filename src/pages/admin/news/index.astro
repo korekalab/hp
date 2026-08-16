@@ -28,15 +28,17 @@ const items = await listAllNews(env.DB);
           <thead class="border-b border-ink/5 bg-ink/[0.02] text-xs font-bold text-ink-soft">
             <tr>
               <th class="px-5 py-3">タイトル</th>
-              <th class="px-5 py-3">状態</th>
+              <th class="whitespace-nowrap px-5 py-3">状態</th>
               <th class="px-5 py-3" />
             </tr>
           </thead>
           <tbody class="divide-y divide-ink/5">
             {items.map((item) => (
               <tr>
-                <td class="px-5 py-3 font-bold text-ink">{item.title}</td>
-                <td class="px-5 py-3">
+                <td class="max-w-[280px] truncate px-5 py-3 font-bold text-ink" title={item.title}>
+                  {item.title}
+                </td>
+                <td class="whitespace-nowrap px-5 py-3">
                   <span
                     class={
                       item.published
@@ -48,17 +50,17 @@ const items = await listAllNews(env.DB);
                   </span>
                 </td>
                 <td class="px-5 py-3">
-                  <div class="flex items-center justify-end gap-2">
+                  <div class="flex items-center justify-end gap-2 whitespace-nowrap">
                     <a
                       href={`/admin/news/${item.id}/edit`}
-                      class="rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-ink/10"
+                      class="whitespace-nowrap rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-ink/10"
                     >
                       編集
                     </a>
                     <form method="POST" action={`/api/admin/news/${item.id}/toggle`}>
                       <button
                         type="submit"
-                        class="rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-turquoise/10"
+                        class="whitespace-nowrap rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-turquoise/10"
                       >
                         {item.published ? "非公開にする" : "公開する"}
                       </button>
@@ -66,7 +68,7 @@ const items = await listAllNews(env.DB);
                     <form method="POST" action={`/api/admin/news/${item.id}/delete`} data-confirm="このお知らせを削除しますか？">
                       <button
                         type="submit"
-                        class="rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-red-50 hover:text-red-600"
+                        class="whitespace-nowrap rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-red-50 hover:text-red-600"
                       >
                         削除
                       </button>

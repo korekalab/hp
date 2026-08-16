@@ -29,18 +29,20 @@ const posts = await listAllPosts(env.DB);
           <thead class="border-b border-ink/5 bg-ink/[0.02] text-xs font-bold text-ink-soft">
             <tr>
               <th class="px-5 py-3">タイトル</th>
-              <th class="px-5 py-3">カテゴリ</th>
-              <th class="px-5 py-3">状態</th>
-              <th class="px-5 py-3">閲覧数</th>
+              <th class="whitespace-nowrap px-5 py-3">カテゴリ</th>
+              <th class="whitespace-nowrap px-5 py-3">状態</th>
+              <th class="whitespace-nowrap px-5 py-3">閲覧数</th>
               <th class="px-5 py-3" />
             </tr>
           </thead>
           <tbody class="divide-y divide-ink/5">
             {posts.map((post) => (
               <tr>
-                <td class="px-5 py-3 font-bold text-ink">{post.title}</td>
-                <td class="px-5 py-3 text-ink-soft">{CATEGORY_LABEL[post.category]}</td>
-                <td class="px-5 py-3">
+                <td class="max-w-[220px] truncate px-5 py-3 font-bold text-ink" title={post.title}>
+                  {post.title}
+                </td>
+                <td class="whitespace-nowrap px-5 py-3 text-ink-soft">{CATEGORY_LABEL[post.category]}</td>
+                <td class="whitespace-nowrap px-5 py-3">
                   <span
                     class={
                       post.published
@@ -51,19 +53,19 @@ const posts = await listAllPosts(env.DB);
                     {post.published ? "公開中" : "下書き"}
                   </span>
                 </td>
-                <td class="px-5 py-3 text-ink-soft">{post.view_count}</td>
+                <td class="whitespace-nowrap px-5 py-3 text-ink-soft">{post.view_count}</td>
                 <td class="px-5 py-3">
-                  <div class="flex items-center justify-end gap-2">
+                  <div class="flex items-center justify-end gap-2 whitespace-nowrap">
                     <a
                       href={`/admin/posts/${post.id}/edit`}
-                      class="rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-ink/10"
+                      class="whitespace-nowrap rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-ink/10"
                     >
                       編集
                     </a>
                     <form method="POST" action={`/api/admin/posts/${post.id}/toggle`}>
                       <button
                         type="submit"
-                        class="rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-turquoise/10"
+                        class="whitespace-nowrap rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-turquoise/10"
                       >
                         {post.published ? "非公開にする" : "公開する"}
                       </button>
@@ -71,7 +73,7 @@ const posts = await listAllPosts(env.DB);
                     <form method="POST" action={`/api/admin/posts/${post.id}/delete`} data-confirm="この記事を削除しますか？">
                       <button
                         type="submit"
-                        class="rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-red-50 hover:text-red-600"
+                        class="whitespace-nowrap rounded-full bg-ink/5 px-3 py-1.5 text-xs font-bold text-ink-soft transition-colors hover:bg-red-50 hover:text-red-600"
                       >
                         削除
                       </button>

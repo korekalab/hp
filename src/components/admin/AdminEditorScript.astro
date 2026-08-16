@@ -26,7 +26,11 @@ const { id, initialHtml = "" } = Astro.props;
     <button type="button" data-cmd="linkCard" class="editor-btn">リンク(カード)</button>
     <button type="button" data-cmd="image" class="editor-btn">画像挿入</button>
   </div>
-  <div class="prose-blog min-h-[320px] max-w-none p-4 focus:outline-none" data-editor-content></div>
+  <div
+    class="prose-blog max-h-[480px] min-h-[320px] max-w-none overflow-y-auto p-4 focus:outline-none"
+    data-editor-content
+  >
+  </div>
   <input type="hidden" data-editor-html-input value={initialHtml} />
   <input type="file" accept="image/*" class="hidden" data-editor-file-input />
 </div>
