@@ -1,13 +1,14 @@
-export type CategoryId = "development" | "media" | "knowhow" | "case";
+export type CategoryId = "blog" | "knowhow" | "devlog" | "case" | "column";
 
 export const CATEGORY_LABEL: Record<CategoryId, string> = {
-  development: "開発",
-  media: "メディア",
+  blog: "ブログ",
   knowhow: "ノウハウ",
+  devlog: "開発記録",
   case: "事例",
+  column: "コラム",
 };
 
-export const CATEGORY_IDS: CategoryId[] = ["development", "media", "knowhow", "case"];
+export const CATEGORY_IDS: CategoryId[] = ["blog", "knowhow", "devlog", "case", "column"];
 
 export const CATEGORY_TABS: { id: CategoryId | "all"; label: string }[] = [
   { id: "all", label: "ALL" },
