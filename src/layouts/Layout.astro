@@ -5,11 +5,13 @@ import { SITE } from "../data/site";
 interface Props {
   title?: string;
   description?: string;
+  /** 記事固有のOGP画像URL(絶対URL)。未指定時はサイト共通のOGP画像を使う */
+  ogImage?: string;
 }
 
-const { title = SITE.title, description = SITE.description } = Astro.props;
+const { title = SITE.title, description = SITE.description, ogImage: customOgImage } = Astro.props;
 
-const ogImage = new URL("/ogp.png", SITE.url).toString();
+const ogImage = customOgImage ?? new URL("/ogp.png", SITE.url).toString();
 const canonicalUrl = new URL(Astro.url.pathname, SITE.url).toString();
 
 const structuredData = {

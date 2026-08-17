@@ -8,12 +8,19 @@ const { initialUrl = null } = Astro.props;
 
 <div data-eyecatch-root>
   <div class="flex items-center gap-4">
-    <div class="aspect-video w-40 shrink-0 overflow-hidden rounded-xl bg-ink/5" data-eyecatch-preview-wrap>
+    <div
+      class="eyecatch-dropzone flex aspect-video w-40 shrink-0 items-center justify-center overflow-hidden rounded-xl border-2 border-dashed border-transparent bg-ink/5 transition-colors"
+      data-eyecatch-preview-wrap
+    >
       {
         initialUrl ? (
           <img src={initialUrl} alt="" class="h-full w-full object-cover" />
         ) : (
-          <div class="flex h-full items-center justify-center text-xs text-ink-soft/60">未設定</div>
+          <div class="pointer-events-none px-2 text-center text-[11px] leading-tight text-ink-soft/60">
+            ここにドラッグ
+            <br />
+            または選択
+          </div>
         )
       }
     </div>
@@ -24,7 +31,7 @@ const { initialUrl = null } = Astro.props;
         画像を選択
         <input type="file" accept="image/*" class="hidden" data-eyecatch-file-input />
       </label>
-      <p class="mt-2 text-xs text-ink-soft/70">16:9で表示されます</p>
+      <p class="mt-2 text-xs text-ink-soft/70">16:9で表示されます。画像をドラッグ&ドロップでも設定できます</p>
     </div>
   </div>
   <input type="hidden" name="eyecatch_url" value={initialUrl ?? ""} data-eyecatch-url-input />
@@ -38,9 +45,12 @@ const { initialUrl = null } = Astro.props;
     const urlInput = root.querySelector<HTMLInputElement>("[data-eyecatch-url-input]");
     const previewWrap = root.querySelector<HTMLElement>("[data-eyecatch-preview-wrap]");
 
-    fileInput?.addEventListener("change", async () => {
-      const file = fileInput.files?.[0];
+    async function handleFile(file: File | undefined | null) {
       if (!file) return;
+      if (!file.type.startsWith("image/")) {
+        window.alert("画像ファイルを選択してください");
+        return;
+      }
 
       try {
         const dataUrl = await fileToDataUrl(file, 1200, 0.82);
@@ -60,6 +70,23 @@ const { initialUrl = null } = Astro.props;
       } catch {
         window.alert("画像の読み込みに失敗しました");
       }
-    });
+    }
+
+    fileInput?.addEventListener("change", () => handleFile(fileInput.files?.[0]));
+
+    if (previewWrap) {
+      previewWrap.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        previewWrap.classList.add("border-turquoise-deep", "bg-turquoise/10");
+      });
+      previewWrap.addEventListener("dragleave", () => {
+        previewWrap.classList.remove("border-turquoise-deep", "bg-turquoise/10");
+      });
+      previewWrap.addEventListener("drop", (e) => {
+        e.preventDefault();
+        previewWrap.classList.remove("border-turquoise-deep", "bg-turquoise/10");
+        handleFile(e.dataTransfer?.files?.[0]);
+      });
+    }
   });
 </script>

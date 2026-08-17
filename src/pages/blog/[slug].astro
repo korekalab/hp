@@ -4,6 +4,7 @@ import PageLayout from "../../layouts/PageLayout.astro";
 import PopularSidebar from "../../components/blog/PopularSidebar.astro";
 import { getPublishedPostBySlug, incrementViewCount, popularPosts } from "../../lib/db";
 import { CATEGORY_LABEL } from "../../lib/categories";
+import { SITE } from "../../data/site";
 
 const { slug } = Astro.params;
 const post = slug ? await getPublishedPostBySlug(env.DB, slug) : null;
@@ -16,9 +17,21 @@ await incrementViewCount(env.DB, post.id);
 
 const popularRaw = await popularPosts(env.DB, 4);
 const popular = popularRaw.filter((p) => p.id !== post.id).slice(0, 3);
+
+// アイキャッチはD1にBase64で保存されているため、X/TwitterなどのOGPクローラーが
+// 読み取れるよう実URL(/media/post/[id])に変換して渡す
+const ogImage = post.eyecatch_url
+  ? post.eyecatch_url.startsWith("data:")
+    ? new URL(`/media/post/${post.id}`, SITE.url).toString()
+    : post.eyecatch_url
+  : undefined;
 ---
 
-<PageLayout title={`${post.title}｜コレカラボ`} description={post.meta_description || post.excerpt}>
+<PageLayout
+  title={`${post.title}｜コレカラボ`}
+  description={post.meta_description || post.excerpt}
+  ogImage={ogImage}
+>
   <article class="px-6 py-16 sm:py-20">
     <div class="mx-auto max-w-6xl lg:grid lg:grid-cols-[1fr_320px] lg:gap-12">
       <div class="mx-auto w-full max-w-3xl">

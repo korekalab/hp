@@ -132,7 +132,8 @@ npx wrangler deploy
 
 ## SEO / メタデータ
 
-- `title` / `description` / OGP / Twitter Card: `src/layouts/Layout.astro`
+- `title` / `description` / OGP / Twitter Card: `src/layouts/Layout.astro`（`ogImage` propで記事ごとに差し替え可能）
+- ブログ記事のOGP画像: アイキャッチはD1にBase64で保存されているため、X/TwitterなどSNSクローラーが読み取れるよう `/media/post/[id]` (`src/pages/media/[type]/[id].ts`) で実URLとして配信し、それをOGP画像に使っている（公開記事のみ配信、非公開記事は404）
 - 構造化データ（Organization / JSON-LD）: `src/layouts/Layout.astro`
 - `sitemap.xml`: `@astrojs/sitemap` により自動生成
 - `robots.txt`: `public/robots.txt`（`/admin` `/api` はDisallow、管理画面ページ自体にも`noindex`メタタグあり）
