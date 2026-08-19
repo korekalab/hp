@@ -18,8 +18,7 @@ const services = await listPublishedServicesByCategory(env.DB, categoryParam);
   <section class="px-6 py-16 sm:py-20">
     <div class="mx-auto max-w-6xl">
       <div class="text-center">
-        <p class="font-display text-sm font-bold tracking-[0.3em] text-turquoise-deep">{category.labelEn}</p>
-        <h1 class="mt-4 font-display text-3xl font-black text-balance text-ink sm:text-4xl">{category.label}</h1>
+        <h1 class="font-display text-3xl font-black text-balance text-ink sm:text-4xl">{category.label}</h1>
         <p class="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-ink-soft sm:text-base">
           {category.description}
         </p>
