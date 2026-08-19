@@ -208,6 +208,13 @@ export interface ServiceInput {
   published: boolean;
 }
 
+export async function listPublishedServices(db: D1Database): Promise<Service[]> {
+  const { results } = await db
+    .prepare(`SELECT * FROM services WHERE published = 1 ORDER BY created_at DESC`)
+    .all<Service>();
+  return results;
+}
+
 export async function listPublishedServicesByCategory(
   db: D1Database,
   category: ProjectIcon

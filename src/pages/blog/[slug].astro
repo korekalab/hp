@@ -4,6 +4,7 @@ import PageLayout from "../../layouts/PageLayout.astro";
 import PopularSidebar from "../../components/blog/PopularSidebar.astro";
 import { getPublishedPostBySlug, incrementViewCount, popularPosts } from "../../lib/db";
 import { CATEGORY_LABEL } from "../../lib/categories";
+import { toIsoDatetime } from "../../lib/datetime";
 import { SITE } from "../../data/site";
 
 const { slug } = Astro.params;
@@ -25,6 +26,24 @@ const ogImage = post.eyecatch_url
     ? new URL(`/media/post/${post.id}`, SITE.url).toString()
     : post.eyecatch_url
   : undefined;
+
+const canonicalUrl = new URL(`/blog/${post.slug}`, SITE.url).toString();
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: post.title,
+  description: post.meta_description || post.excerpt,
+  image: ogImage,
+  datePublished: toIsoDatetime(post.created_at),
+  dateModified: toIsoDatetime(post.updated_at),
+  author: { "@type": "Organization", name: SITE.name },
+  publisher: {
+    "@type": "Organization",
+    name: SITE.name,
+    logo: { "@type": "ImageObject", url: new URL("/logo-mark.png", SITE.url).toString() },
+  },
+  mainEntityOfPage: { "@type": "WebPage", "@id": canonicalUrl },
+};
 ---
 
 <PageLayout
@@ -32,6 +51,7 @@ const ogImage = post.eyecatch_url
   description={post.meta_description || post.excerpt}
   ogImage={ogImage}
 >
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(structuredData)} />
   <article class="px-6 py-16 sm:py-20">
     <div class="mx-auto max-w-6xl lg:grid lg:grid-cols-[1fr_320px] lg:gap-12">
       <div class="mx-auto w-full max-w-3xl">
@@ -47,7 +67,7 @@ const ogImage = post.eyecatch_url
         {
           post.eyecatch_url && (
             <div class="mt-8 aspect-video overflow-hidden rounded-3xl bg-ink/5">
-              <img src={post.eyecatch_url} alt="" class="h-full w-full object-cover" />
+              <img src={post.eyecatch_url} alt={post.title} class="h-full w-full object-cover" />
             </div>
           )
         }

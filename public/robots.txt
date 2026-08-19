@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api
 
-Sitemap: https://korekalab.com/sitemap-index.xml
+Sitemap: https://korekalab.com/sitemap.xml
