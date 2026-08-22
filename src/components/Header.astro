@@ -1,5 +1,19 @@
 ---
 import { SITE } from "../data/site";
+import { projectCategories } from "../data/projects";
+import IconApp from "./icons/IconApp.astro";
+import IconMedia from "./icons/IconMedia.astro";
+import IconMarketing from "./icons/IconMarketing.astro";
+import IconEvent from "./icons/IconEvent.astro";
+import IconMore from "./icons/IconMore.astro";
+
+const icons = {
+  app: IconApp,
+  media: IconMedia,
+  marketing: IconMarketing,
+  event: IconEvent,
+  more: IconMore,
+} as const;
 
 const { pathname } = Astro.url;
 const isHome = pathname === "/";
@@ -28,6 +42,47 @@ const navLinks = [
     </a>
 
     <nav class="hidden sm:flex items-center gap-6">
+      <div class="group relative">
+        <button
+          type="button"
+          class="flex items-center gap-1 text-sm font-bold text-ink-soft transition-colors hover:text-turquoise-deep"
+        >
+          取り組み
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-3.5 w-3.5 transition-transform duration-200 group-hover:rotate-180 group-focus-within:rotate-180"
+          >
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </button>
+        <div
+          class="invisible absolute left-1/2 top-full z-50 w-[520px] -translate-x-1/2 pt-3 opacity-0 transition-all duration-200 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
+        >
+          <div class="grid grid-cols-2 gap-1 rounded-3xl border border-ink/5 bg-white p-3 shadow-xl">
+            {
+              projectCategories.map((category) => {
+                const Icon = icons[category.icon];
+                return (
+                  <a
+                    href={`/works/${category.id}`}
+                    class="flex items-center gap-3 rounded-2xl p-3 transition-colors hover:bg-turquoise/5"
+                  >
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-turquoise/10">
+                      <Icon class="h-5 w-5" />
+                    </span>
+                    <span class="text-sm font-bold text-ink">{category.label}</span>
+                  </a>
+                );
+              })
+            }
+          </div>
+        </div>
+      </div>
       {
         navLinks.map((link) => (
           <a
@@ -67,13 +122,34 @@ const navLinks = [
     class="hidden sm:hidden border-t border-ink/5 bg-white/95 backdrop-blur-md px-5 py-4"
   >
     <div class="flex flex-col gap-3">
-      {
-        navLinks.map((link) => (
-          <a href={link.href} class="text-base font-bold text-ink-soft hover:text-turquoise-deep">
-            {link.label}
-          </a>
-        ))
-      }
+      <p class="text-xs font-bold tracking-wider text-ink-soft/60">取り組み</p>
+      <div class="grid grid-cols-2 gap-2">
+        {
+          projectCategories.map((category) => {
+            const Icon = icons[category.icon];
+            return (
+              <a
+                href={`/works/${category.id}`}
+                class="flex items-center gap-2 rounded-2xl border border-ink/5 p-3 hover:bg-turquoise/5"
+              >
+                <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-turquoise/10">
+                  <Icon class="h-4 w-4" />
+                </span>
+                <span class="text-sm font-bold text-ink">{category.label}</span>
+              </a>
+            );
+          })
+        }
+      </div>
+      <div class="mt-1 flex flex-col gap-3 border-t border-ink/5 pt-3">
+        {
+          navLinks.map((link) => (
+            <a href={link.href} class="text-base font-bold text-ink-soft hover:text-turquoise-deep">
+              {link.label}
+            </a>
+          ))
+        }
+      </div>
       <a
         href={contactHref}
         class="mt-2 inline-block w-fit rounded-full bg-ink text-white text-sm font-bold px-5 py-2.5 hover:bg-turquoise-deep"
